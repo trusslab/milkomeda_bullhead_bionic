@@ -27,6 +27,7 @@
 #include "private/bionic_tls.h"
 #include "private/ScopedPthreadMutexLocker.h"
 #include "private/ThreadLocalBuffer.h"
+#include "prints_android2.h"
 
 /* This file hijacks the symbols stubbed out in libdl.so. */
 
@@ -69,6 +70,9 @@ void android_update_LD_LIBRARY_PATH(const char* ld_library_path) {
 static void* dlopen_ext(const char* filename, int flags,
                         const android_dlextinfo* extinfo, void* caller_addr) {
   ScopedPthreadMutexLocker locker(&g_dl_mutex);
+  if (!strcmp(filename, "libextmedia_jni.so")) {
+      return nullptr;
+  }
   void* result = do_dlopen(filename, flags, extinfo, caller_addr);
   if (result == nullptr) {
     __bionic_format_dlerror("dlopen failed", linker_get_error_buffer());

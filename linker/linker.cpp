@@ -66,6 +66,7 @@
 
 #include "android-base/strings.h"
 #include "ziparchive/zip_archive.h"
+#include "prints_android2.h"
 
 extern void __libc_init_globals(KernelArgumentBlock&);
 extern void __libc_init_AT_SECURE(KernelArgumentBlock&);
@@ -159,7 +160,7 @@ static soinfo* sonext;
 static soinfo* somain; // main process, always the one after libdl_info
 
 #if defined(__LP64__)
-static const char* const kSystemLibDir     = "/system/lib64";
+static const char* const kSystemLibDir     = "/system/lib65";
 static const char* const kVendorLibDir     = "/vendor/lib64";
 static const char* const kAsanSystemLibDir = "/data/lib64";
 static const char* const kAsanVendorLibDir = "/data/vendor/lib64";
@@ -1192,6 +1193,8 @@ class LoadTask {
     si_->load_bias = elf_reader.load_bias();
     si_->phnum = elf_reader.phdr_count();
     si_->phdr = elf_reader.loaded_phdr();
+    if (extinfo_ && (extinfo_->flags & ANDROID_DLEXT_USE_SHIELDED_SPACE))
+    	si_->secure = 1;
 
     return true;
   }
@@ -2421,6 +2424,7 @@ void* do_dlopen(const char* name, int flags, const android_dlextinfo* extinfo,
     DL_ERR("invalid flags to dlopen: %x", flags);
     return nullptr;
   }
+
 
   android_namespace_t* ns = get_caller_namespace(caller);
 

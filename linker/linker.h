@@ -204,6 +204,7 @@ struct soinfo {
   uint32_t unused2; // DO NOT USE, maintained for compatibility
   uint32_t unused3; // DO NOT USE, maintained for compatibility
 #endif
+  int secure;
 
   soinfo* next;
  private:

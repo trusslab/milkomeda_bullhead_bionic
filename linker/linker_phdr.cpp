@@ -423,6 +423,11 @@ size_t phdr_table_get_load_size(const ElfW(Phdr)* phdr_table, size_t phdr_count,
   return max_vaddr - min_vaddr;
 }
 
+struct shield_addr_info {
+        void *hint_addr;
+	size_t load_size;
+};
+
 // Reserve a virtual address range big enough to hold all loadable
 // segments of a program header table. This is done by creating a
 // private anonymous mmap() with PROT_NONE.
@@ -443,18 +448,26 @@ bool ElfReader::ReserveAddressSpace(const android_dlextinfo* extinfo) {
   void* mmap_hint = nullptr;
 
   if (extinfo != nullptr) {
-    if (extinfo->flags & ANDROID_DLEXT_RESERVED_ADDRESS) {
-      reserved_size = extinfo->reserved_size;
-      reserved_hint = false;
-    } else if (extinfo->flags & ANDROID_DLEXT_RESERVED_ADDRESS_HINT) {
-      reserved_size = extinfo->reserved_size;
-    }
+    if (extinfo->flags & ANDROID_DLEXT_USE_SHIELDED_SPACE) {
+      struct shield_addr_info *shield_info =
+	reinterpret_cast<struct shield_addr_info *>(extinfo->reserved_addr);
+      mmap_hint = shield_info->hint_addr;
+      shield_info->load_size = load_size_;
+    } else {
 
-    if (addr != nullptr && (extinfo->flags & ANDROID_DLEXT_FORCE_FIXED_VADDR) != 0) {
-      mmap_hint = addr;
-    } else if ((extinfo->flags & ANDROID_DLEXT_LOAD_AT_FIXED_ADDRESS) != 0) {
-      mmap_hint = extinfo->reserved_addr;
-      strict_hint = true;
+      if (extinfo->flags & ANDROID_DLEXT_RESERVED_ADDRESS) {
+        reserved_size = extinfo->reserved_size;
+        reserved_hint = false;
+      } else if (extinfo->flags & ANDROID_DLEXT_RESERVED_ADDRESS_HINT) {
+        reserved_size = extinfo->reserved_size;
+      }
+
+      if (addr != nullptr && (extinfo->flags & ANDROID_DLEXT_FORCE_FIXED_VADDR) != 0) {
+        mmap_hint = addr;
+      } else if ((extinfo->flags & ANDROID_DLEXT_LOAD_AT_FIXED_ADDRESS) != 0) {
+        mmap_hint = extinfo->reserved_addr;
+        strict_hint = true;
+      }
     }
   }
 

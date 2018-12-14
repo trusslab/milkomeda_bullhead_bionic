@@ -103,6 +103,8 @@ enum {
    */
   ANDROID_DLEXT_USE_NAMESPACE = 0x200,
 
+  ANDROID_DLEXT_USE_SHIELDED_SPACE = 0x400,
+
   /* Mask of valid bits */
   ANDROID_DLEXT_VALID_FLAG_BITS       = ANDROID_DLEXT_RESERVED_ADDRESS |
                                         ANDROID_DLEXT_RESERVED_ADDRESS_HINT |
@@ -113,7 +115,8 @@ enum {
                                         ANDROID_DLEXT_FORCE_LOAD |
                                         ANDROID_DLEXT_FORCE_FIXED_VADDR |
                                         ANDROID_DLEXT_LOAD_AT_FIXED_ADDRESS |
-                                        ANDROID_DLEXT_USE_NAMESPACE,
+                                        ANDROID_DLEXT_USE_NAMESPACE |
+                                        ANDROID_DLEXT_USE_SHIELDED_SPACE,
 };
 
 struct android_namespace_t;

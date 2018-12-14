@@ -1,5 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 
+
 include $(CLEAR_VARS)
 
 LOCAL_CLANG := true
@@ -85,7 +86,7 @@ LOCAL_FORCE_STATIC_EXECUTABLE := true
 
 LOCAL_MODULE := linker
 LOCAL_MODULE_STEM_32 := linker
-LOCAL_MODULE_STEM_64 := linker64
+LOCAL_MODULE_STEM_64 := linker65
 LOCAL_MULTILIB := both
 
 # Leave the symbols in the shared library so that stack unwinders can produce
@@ -115,7 +116,7 @@ endef
 
 $(eval $(call add-linker-symlink,linker_asan,linker))
 ifeq ($(TARGET_IS_64_BIT),true)
-$(eval $(call add-linker-symlink,linker_asan64,linker64))
+$(eval $(call add-linker-symlink,linker_asan64,linker65))
 endif
 
 include $(call first-makefiles-under,$(LOCAL_PATH))

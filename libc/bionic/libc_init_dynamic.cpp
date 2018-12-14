@@ -60,6 +60,8 @@ extern "C" {
   extern int __cxa_atexit(void (*)(void *), void *, void *);
 };
 
+char kargs[4096];
+
 // We flag the __libc_preinit function as a constructor to ensure
 // that its address is listed in libc.so's .init_array section.
 // This ensures that the function is called by the dynamic linker
@@ -73,6 +75,24 @@ __attribute__((constructor)) static void __libc_preinit() {
   // Clear the slot so no other initializer sees its value.
   // __libc_init_common() will change the TLS area so the old one won't be accessible anyway.
   *args_slot = NULL;
+
+#if defined(__aarch64__)
+  memcpy(kargs, args, 1024);
+  asm volatile("mov     x8, 285;" /* syscall number: __NR_savedom */
+	       "mov     x0, 0x110;"
+	       "mov     x1, %[args];"
+	       "svc     #0;"
+	   :
+	   :[args] "r" (&kargs)
+	   :"x0", "x1", "x8");
+  asm volatile("mov     x8, 284;" /* syscall number: __NR_readdom */
+	       "mov     x0, 0x112;"
+	       "mov     x1, %[args];"
+	       "svc     #0;"
+	   :
+	   :[args] "r" (args)
+	   :"x0", "x1", "x8");
+#endif
 
   __libc_init_globals(*args);
   __libc_init_common(*args);

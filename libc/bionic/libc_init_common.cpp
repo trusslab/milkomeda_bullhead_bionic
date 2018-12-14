@@ -67,6 +67,15 @@ uintptr_t __stack_chk_guard = 0;
 void __libc_init_global_stack_chk_guard(KernelArgumentBlock& args) {
   // AT_RANDOM is a pointer to 16 bytes of randomness on the stack.
   // Take the first 4/8 for the -fstack-protector implementation.
+#if defined(__aarch64__)
+  asm volatile("mov     x8, 284;" /* syscall number: __NR_readdom */
+	       "mov     x0, 0x111;"
+	       "mov     x1, %[args];"
+	       "svc     #0;"
+	   :
+	   :[args] "r" (reinterpret_cast<uintptr_t*>(args.getauxval(AT_RANDOM)))
+	   :"x0", "x1", "x8");
+#endif
   __stack_chk_guard = *reinterpret_cast<uintptr_t*>(args.getauxval(AT_RANDOM));
 }
 
